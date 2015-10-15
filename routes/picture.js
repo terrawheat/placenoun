@@ -7,12 +7,10 @@ var del = require('del');
 var router = express.Router();
 var keys = { api_key: process.env.FLICKR_KEY };
 var flickr = new Flickr(keys);
-var flickUrl = '';
 
 router.get('/:noun', function (req, res, next) {
-  flickr.get('photos.search', { tags: req.params.noun }, function (err, response) {
-    if (err) return console.error(err);
 
+  search(req.params.noun, function (response) {
     var photos = response.photos;
     var length = Number(photos.total) > 100 ? 100 : Number(photos.total);
     var selectedIndex = getRandomInt(1, length);
@@ -33,6 +31,19 @@ router.get('/:noun', function (req, res, next) {
   });
 });
 
+function search(tags, cb) {
+  flickr.get('photos.search', { tags }, function (err, response) {
+    if (err) return console.error(err);
+
+    var photos = response.photos;
+    var length = Number(photos.total) > 100 ? 100 : Number(photos.total);
+    if (length === 0) {
+      return search('kitten', cb);
+    }
+
+    cb(response);
+  });
+}
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
