@@ -34,10 +34,11 @@ router.get('/:noun', function (req, res, next) {
 function search(tags, query, cb) {
   query = query || {};
   var defaults = {
-    tags,
+    text: tags,
     safe_search: 1,
     tag_mode: 'any',
-    per_page: 500,
+    per_page: 100,
+    sort: 'relevance',
   };
   var apiQuery = Object.assign(defaults, query);
 
