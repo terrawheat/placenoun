@@ -10,7 +10,7 @@ var flickr = new Flickr(keys);
 
 router.get('/:noun', function (req, res, next) {
 
-  search(req.params.noun, function (response) {
+  search(req.params.noun, { tag_mode: 'all' }, function (response) {
     var photos = response.photos;
     var length = Number(photos.total) > 100 ? 100 : Number(photos.total);
     var selectedIndex = getRandomInt(1, length);
@@ -31,14 +31,27 @@ router.get('/:noun', function (req, res, next) {
   });
 });
 
-function search(tags, cb) {
-  flickr.get('photos.search', { tags }, function (err, response) {
+function search(tags, query, cb) {
+  query = query || {};
+  var defaults = {
+    tags,
+    safe_search: 1,
+    tag_mode: 'any',
+    per_page: 500,
+  };
+  var apiQuery = Object.assign(defaults, query);
+
+
+  flickr.get('photos.search', apiQuery, function (err, response) {
     if (err) return console.error(err);
 
     var photos = response.photos;
     var length = Number(photos.total) > 100 ? 100 : Number(photos.total);
     if (length === 0) {
-      return search('kitten', cb);
+      if (apiQuery.tag_mode === 'all') {
+        return search(apiQuery.tags, {}, cb);
+      }
+      return search('kitten', {}, cb);
     }
 
     cb(response);
