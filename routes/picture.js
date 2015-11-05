@@ -9,10 +9,11 @@ var keys = { api_key: process.env.FLICKR_KEY };
 var flickr = new Flickr(keys);
 
 router.get('/:noun', function (req, res, next) {
+  var pageSize = req.query.pageSize || 100;
 
-  search(req.params.noun, { tag_mode: 'all' }, function (response) {
+  search(req.params.noun, { tag_mode: 'all', per_page: pageSize }, function (response) {
     var photos = response.photos;
-    var length = Number(photos.total) > 100 ? 100 : Number(photos.total);
+    var length = Number(photos.total) > pageSize ? pageSize - 1 : Number(photos.total);
     var selectedIndex = getRandomInt(1, length);
     var photo = photos.photo[selectedIndex];
 
@@ -47,7 +48,7 @@ function search(tags, query, cb) {
     if (err) return console.error(err);
 
     var photos = response.photos;
-    var length = Number(photos.total) > 100 ? 100 : Number(photos.total);
+    var length = Number(photos.total) > apiQuery.per_page ? apiQuery.per_page - 1 : Number(photos.total);
     if (length === 0) {
       if (apiQuery.tag_mode === 'all') {
         return search(apiQuery.tags, {}, cb);
